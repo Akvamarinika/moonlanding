@@ -1,0 +1,29 @@
+{
+    "Lua.diagnostics.globals": [
+        "random",
+        "love",
+        "default_color",
+        "Timer",
+        "self",
+        "map",
+        "pushRotate",
+        "canvas",
+        "widthField",
+        "heightField",
+        "checkCollisions",
+        "isPaused",
+        "state",
+        "system",
+        "checkPointOnLine",
+        "systemCrash",
+        "gameState"
+    ],
+    "Lua.diagnostics.disable": [
+        "unused-local",
+        "deprecated",
+        "redefined-local",
+        "duplicate-set-field",
+        "redundant-parameter",
+        "different-requires"
+    ]
+}
