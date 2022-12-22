@@ -25,10 +25,6 @@ function ParticleSystem:update(dt)
         self.index = self.index + 1
     end
 
---    table.sort(self.particles, function(a, b)
- --       return a.radius > b.radius
---    end)
-
     for key, value in pairs(self.particles) do
         if value:isDead() then
             value = self:createParticle() --генерир-ет постоянно частицы
@@ -49,25 +45,13 @@ function ParticleSystem:draw()
 
 end
 
-
-
-
 --создает частицы 1 раз:
 function ParticleSystem:createParticles() --polygons
     --print(self.origin)
---    for i = 1, #polygons, 1 do 
-       -- print('pol '..polygons[i][2])
---        self.particles[i] = self.cls:create(self.origin:copy(), polygons[i])
-        --end
-        --self.n = #polygons
         for i = 1, self.n, 1 do  --4 полигона
        --      print('pol '..polygons[i][3])
              self.particles[i] = self.cls:create(self.origin:copy()) --, polygons[i]
-
         end
-       -- self.particles[i] = self.cls:create(self.origin:copy())
-    
-    
 end
 
 function ParticleSystem:updateOne(dt)

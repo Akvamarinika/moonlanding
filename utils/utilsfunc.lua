@@ -19,9 +19,6 @@ function random(min, max)
     return (min > max and (love.math.random()*(min - max) + max)) or (love.math.random()*(max - min) + min)
 end
 
-
-
-
 function get_red_blue_gradient_color (t) -- t is between 0 as red to 1 as blue
 	local r = 2-4*t
 	local g = t < 1/2 and 4*t or 4-4*t

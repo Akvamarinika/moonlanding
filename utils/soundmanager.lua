@@ -6,12 +6,15 @@ SoundManager.playSound = function(sound)
     end    
 end
 
-SoundManager.playLoop = function(loop)
-    
+SoundManager.playLoop = function(sound)
+    if sound ~= nil then
+        sound:play(true)
+    end  
 end
 
 SoundManager.getSound = function(soundName)
-    return love.audio.newSource(soundName, "stream")
+    print(soundName)
+    return love.audio.newSource(soundName, "static")
 end
 
 SoundManager.stopSound = function(sound)

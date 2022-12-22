@@ -2,11 +2,10 @@
 --Константы влияющие на движение коробля:
 GRAVITY = 0.9    --0.4        --Увеличивает вертикальную скорость корабля 
 ANGLE_VELOCITY = 2   --Изменение угла при нажатии клавиш "поворота"
-THRUST_FACTOR = 3      --Используется для расчета приложенной мощности тяги - см. Процесс космического корабля. (spaceship process)
+THRUST_FACTOR = 3      --Используется для расчета приложенной мощности тяги
 
 
 --Отображаются на экране:
-
 TOP_VELOCITY_Y = 0.6 ------- максимальная 60
 TOP_VELOCITY_X = 0.6 ------- максимальная 60
 DRAG_X = THRUST_FACTOR/TOP_VELOCITY_X  --трение о воздух (для упрощения игры)
@@ -15,22 +14,12 @@ DRAG_Y = THRUST_FACTOR/TOP_VELOCITY_Y
 --Начальные значения:
 INITIAL_FUEL = 1500   --топливо
 INITIAL_VY = 0        --вертикальная скорость коробля ( при падении ==> положительная)
-INITIAL_VX = 1800     --горизонтальная скорость коробля   ( при движении вправо ==> положительная)
+INITIAL_VX = 0    --горизонтальная скорость коробля   ( при движении вправо ==> положительная)
 
 --Значения для проверки успешной посадки коробля:
-SAFE_ANGLE = 2 * ANGLE_VELOCITY   --Приземление выполнено вертикально +/- этот угол будет безопасным
-GOOD_LANDING_SPEED = 6
-HARD_LANDING_SPEED = 12
-GOOD_ANGLE_VELOCITY = -math.pi/2
-
---Бонус к очкам и топливу:
-GOOD_SCORE = 50         --за успешную посадку коробля
-HARD_SCORE = 20         --за "жесткую" посадку
-CRASH_PAD_SCORE = 5     --за «аварию» на посадочной площадке
-
-FUEL_BONUS = 50         --бонус к топливу при успешной посадке
-FUEL_PENALTY = -250    --за «аварию» вне посадочной площадки
-FUEL_ABORT = -100    -- топливо при прерывании миссии
+GOOD_LANDING_SPEED = 0.59       -- любая меньше TOP_VELOCITY
+GOOD_ANGLE_VELOCITY_MIN = 80    --Приземление выполнено вертикально +/- этот угол будет безопасным
+GOOD_ANGLE_VELOCITY_MAX = 100
 
 
 Spaceship = {}
@@ -46,36 +35,20 @@ function Spaceship:create(location)
     spaceship.location = location
     spaceship.velocity = Vector:create(0, 0)
     spaceship.acceleration = Vector:create(0, 0)    --100
-    --spaceship.weight = weight or 1
-    --spaceship.size = 20  * spaceship.weight
     spaceship.fuel = INITIAL_FUEL
     spaceship.altitude = 0
     spaceship.isEngineActive = false
-    spaceship.timer = ExtendedTimer:create() 
-    spaceship.fire_color = {255, 198, 93} 
-
+   -- spaceship.fire_color = {255, 198, 93} 
     spaceship.polygons = {}
 
     spaceship:init()
 
     spaceship.systemFire = nil
-    spaceship.systemFire2 = nil
-
-    spaceship.boost = nil
-
-
-
-
-
  --   spaceship.fireParticle = FireParticle:create(Vector:create(-spaceship.width - spaceship.width/2, 0))
-      spaceship.fireParticles = {}
-
-
+    spaceship.fireParticles = {}
 
     spaceship.vx = INITIAL_VX               --Горизонтальная скорость космического корабля
     spaceship.vy = INITIAL_VY               --Вертикальная скорость космического корабля
-    spaceship.thrust = 0          --Тяга (изменяется игроком)
-    --spaceship.angle2            --Угол смещения космического корабля, используется, когда корабль находится в вертикальном положении (angle == 0)
 
     return spaceship
 end
@@ -83,13 +56,8 @@ end
 
 
 function Spaceship:update(dt)
-       -- if self.timer then self.timer:update(dt) end
 
-
-
-
-
-		----SHIP CONTROL   self.angle = self.angle - self.rv*dt ====left
+		----ship control        self.angle = self.angle - self.rv*dt ====left
 		if love.keyboard.isDown('right') then
 			self.angle = self.angle + (self.angleVelocity * dt)
 			if math.deg(self.angle) > 0 then self.angle = 0 end
@@ -109,7 +77,7 @@ function Spaceship:update(dt)
         end    
 
 
-        --turbo acceleration:
+        --turbo acceleration X5:
         if love.keyboard.isDown('w') and self.fuel > 0 then
             self.isEngineActive = true
             self.fuel = self.fuel - (0.4 * THRUST_FACTOR)
@@ -121,6 +89,7 @@ function Spaceship:update(dt)
 
         if love.keyboard.isDown('up') or love.keyboard.isDown('w') then
             self.systemFire = ParticleSystem:create(Vector:create(self.polygons[4][5] + self.location.x, self.polygons[4][6] + self.location.y), 20, FireParticle)
+            SoundManager.playSound(sounds['engine']) 
            
             if self.systemFire ~= nil then
                 self.systemFire:update(dt)
@@ -130,15 +99,6 @@ function Spaceship:update(dt)
             self.isEngineActive = false
         end
           
-
-
-
-        self.trail_color = {255, 198, 93}
-        if self.isEngineActive then self.trail_color = {76, 195, 217} end
-
-
-
-
 
         self.velocity.y = self.velocity.y + (GRAVITY * dt) --- +гравитационное притяжение Луны, изменение вертикальной скорости
         self.velocity = self.velocity + self.acceleration * dt
@@ -198,13 +158,8 @@ function Spaceship:draw()
         self.systemFire:draw()
     end
     
-
-
-
     love.graphics.pop() -- удаляет полигоны
 end
-
-
 
 
 function Spaceship:init()
@@ -239,33 +194,14 @@ function Spaceship:init()
         -self.width - self.width/2, 0  -- 19
     }
 
-
-    -----------Boost----------------------------------------------------------------------------------------------------------------------------------
-    self.fire_color = {76, 195, 217}
-    self.timer:every(0.01, function()
-
-    if self.spaceship then
-        local locationFireParticle = Vector:create( self.location.x - 0.9*self.width*math.cos(self.angle) + 0.2*self.width*math.cos(self.angle - math.pi/2), 
-                                    self.location.y - 0.9*self.width*math.sin(self.angle) + 0.2*self.width*math.sin(self.angle - math.pi/2))
-     --   table.insert(self.fireParticles, 
-     self.boost =  FireParticle:create(Vector:create(locationFireParticle), {radius = love.math.random(2, 4), duration = love.math.random(0.15, 0.25), color = self.trail_color})
-        
-      --  )
-            --print(#self.fireParticles)
-
-    end       
---           self.x - 0.9*self.width*math.cos(self.angle) + 0.2*self.width*math.cos(self.angle + math.pi/2), 
---           self.y - 0.9*self.width*math.sin(self.angle) + 0.2*self.width*math.sin(self.angle + math.pi/2), 
---           {parent = self, angle = random(2, 4), d = random(0.15, 0.25), color = self.fire_color})
-
-    end)
 end
+
 
 
 function Spaceship:intersectsWithLine(pointA, pointB)
     r,g,b,a = love.graphics.getColor()
 
-    love.graphics.setColor(get_red_blue_gradient_color(0.5))    
+   -- love.graphics.setColor(get_red_blue_gradient_color(0.5))    
     --верх лево 8
 --    if  (math.abs(math.deg(self.angle)) >= 150) and (math.abs(math.deg(self.angle)) >= 15) and
         if self:isPointUnderLine(pointA, pointB, Vector:create(self.polygons[2][3] + self.location.x, self.polygons[2][4] + self.location.y)) then
@@ -323,23 +259,16 @@ function Spaceship:isPointUnderLine(left, right, point)
 
     --смещение точки по по оси X относительно начала линии (x = 0)
     local newX = point.x - left.x
-
     
     local alt = 9999999999999
     self.altitude = (dx * newX + y0) - (point.y - self.height)  --Vector:create(dx * newX + y0)
-
-
-
 
     --когда точка под линией
     return (point.y > (dx * newX + y0));
 end
 
-
-
-
 function Spaceship:isGoodAngle()
-    return ((math.abs(math.deg(self.angle)) <= 100) and (math.abs(math.deg(self.angle)) >= 80))
+    return ((math.abs(math.deg(self.angle)) <= GOOD_ANGLE_VELOCITY_MAX) and (math.abs(math.deg(self.angle)) >= GOOD_ANGLE_VELOCITY_MIN))
 end
 
 function Spaceship:isMainPointsOnStraightLine()

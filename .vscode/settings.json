@@ -16,7 +16,9 @@
         "system",
         "checkPointOnLine",
         "systemCrash",
-        "gameState"
+        "gameState",
+        "sounds",
+        "b"
     ],
     "Lua.diagnostics.disable": [
         "unused-local",

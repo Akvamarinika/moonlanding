@@ -3,6 +3,7 @@ local MODE_2X = false --С двукратным увеличением
 local GAME_STATE = {PLAY = 0, PAUSED = 1, CRASHED = 2, LANDED = 3}
 --игровая 1 секунда:
 local COUNTDOWN_TIME = 0.65
+local r, g, b, a = love.graphics.getColor()
 
 GameScreen = {}
 GameScreen.__index = GameScreen
@@ -12,7 +13,6 @@ function GameScreen:create()
     local screen = {}
     setmetatable(screen, GameScreen)
     screen.landscape = Landscape:create()
---    print(screen.landscape)
     screen.starsField = StarsField:create(500, 'circle', screen.landscape)
     screen.camera = Camera()
     screen.spaceshipPlayer = Spaceship:create(location)
@@ -29,9 +29,17 @@ function GameScreen:create()
 end
 
 function GameScreen:update(dt)
+    SoundManager.stopSound(sounds['music_start'])
+    SoundManager.playLoop(sounds['music_game']) 
 
     if love.keyboard.wasPressed('p') and (self.state == GAME_STATE['PLAY'] or self.state == GAME_STATE['PAUSED']) then   
         self.isPaused = not self.isPaused
+
+        if self.state == GAME_STATE['PLAY'] then
+            SoundManager.playSound(sounds['pause-on']) 
+        else
+            SoundManager.playSound(sounds['pause-off'])     
+        end
     end
 
     if not self.isPaused then
@@ -82,6 +90,8 @@ function GameScreen:update(dt)
 end
 
 function GameScreen:reset()
+    SoundManager.stopSound(sounds['music_start'])
+    SoundManager.playLoop(sounds['music_game']) 
     self.landscape = Landscape:create()
     self.starsField = StarsField:create(500, 'circle', self.landscape)
     self.systemParticlesCrash = nil
@@ -112,20 +122,30 @@ function GameScreen:draw()
 
 
     self.camera:detach()
-    love.graphics.print("Angle:".. math.abs(math.deg(self.spaceshipPlayer.angle)), 15, 30)
-    love.graphics.print("Velocity_X:"..  math.floor(self.spaceshipPlayer.velocity.x * 100), 15, 60)
-    love.graphics.print("Velocity_Y:"..  math.floor(self.spaceshipPlayer.velocity.y * 100), 15, 90)
-    love.graphics.print("Altitude:".. math.ceil(self.spaceshipPlayer.altitude), 15, 120)
-    love.graphics.print("Fuel:".. self.spaceshipPlayer.fuel, 15, 150)
+    love.graphics.setFont(mediumFont)
+    love.graphics.print("Angle:  ".. math.floor(math.abs(math.deg(self.spaceshipPlayer.angle))), 15, 30)
+    love.graphics.print("Velocity_X:  "..  math.floor(self.spaceshipPlayer.velocity.x * 100), 15, 60)
+    love.graphics.print("Velocity_Y:  "..  math.floor(self.spaceshipPlayer.velocity.y * 100), 15, 90)
+    love.graphics.print("Fuel:  ".. self.spaceshipPlayer.fuel, 15, 120)
+    --love.graphics.print("Altitude:".. math.ceil(self.spaceshipPlayer.altitude), 15, 150)
+    
 
     if self.spaceshipPlayer.fuel < 400 and math.floor(love.timer.getTime()) % 2 == 0 then
+        love.graphics.setFont(hugeFont)
         local hFont = 20
         love.graphics.printf('LOW ON FUEL', 0, heightField / 2 - hFont, widthField, "center")
     end
 
+    
     if self.isPaused and (self.state == GAME_STATE['PLAY'] or self.state == GAME_STATE['PAUSED']) then
+        love.graphics.setFont(hugeFont)
+        love.graphics.setColor(1, 1, 1)
         love.graphics.printf('PAUSE', 0, heightField / 2 - 100, widthField, "center")
+        love.graphics.setColor(0, 0, 0, 0.2)
+    else
+        love.graphics.setColor(r, g, b, a)
     end
+
     
 end
 
@@ -137,13 +157,14 @@ function GameScreen:checkCollisions()
         if self.spaceshipPlayer:intersectsWithLine(self.landscape.vectorsTable[i], self.landscape.vectorsTable[i + 1]) then
             self.isPaused = true
             self.state = GAME_STATE['CRASHED']
-            print("crashed ")
+            --print("crashed ")
+            SoundManager.playSound(sounds['collision']) 
       
-
             if self.landscape.vectorsTable[i].y == self.landscape.vectorsTable[i + 1].y and self:checkPointOnLine(i) then
                 if (self.spaceshipPlayer.velocity.x < TOP_VELOCITY_X) and (self.spaceshipPlayer.velocity.y < TOP_VELOCITY_Y) and (self.spaceshipPlayer:isGoodAngle()) then -- угол допустим +-10 градусов
                     self.state = GAME_STATE['LANDED']
-                    print("Landed... ")
+                    --print("Landed... ")
+                    SoundManager.playSound(sounds['win']) 
                     gameState:setNewState(gameState.winScreen)
                 end
             end

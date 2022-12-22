@@ -4,31 +4,35 @@ TitleScreen.__index = TitleScreen
 local newGame = "New Game"
 local exit = "Exit"
 
+
 function TitleScreen:create()
     local screen = {}
     setmetatable(screen, TitleScreen)
-    screen.menu = Menu:create(MenuItem:create("newGame", "newGame", TitleScreen:goToMainGame()), 
-                        MenuItem:create("Exit", "Exit", TitleScreen:exitGame()), 
-                         1, 200, 300)
+    screen.menu = {newGame, exit}
     screen.index = 1
-    screen.menuWidth = 200
-    screen.rowSize = 30
+    screen.menuWidth = 280
+    screen.rowSize = 65
     screen.isKeyDownDown = false
     screen.isKeyUpDown = false
     screen.isKeyEnterDown = false
-    screen.starsField = StarsField:create()
+    screen.starsField = StarsField:create(300)
     return screen
 end
 
 function TitleScreen:update(dt)
+    SoundManager.stopSound(sounds['music_game'])
+    SoundManager.playLoop(sounds['music_start'])
     self.starsField:update(dt)
+    
 
     local isKeyDownDown = love.keyboard.isDown("down")
     local isKeyUpDown = love.keyboard.isDown("up")
-    if not(self.isKeyDownDown) and isKeyDownDown and self.index <= #self.menu then 
+    if not(self.isKeyDownDown) and isKeyDownDown and self.index <= #self.menu then
+        SoundManager.playSound(sounds['menu_change']) 
         self.isKeyDownDown = true
         self.index = self.index + 1
     elseif not(self.isKeyUpDown) and isKeyUpDown and self.index > 1 then    
+        SoundManager.playSound(sounds['menu_change'])
         self.isKeyUpDown = true
         self.index = self.index - 1
     else
@@ -41,8 +45,10 @@ function TitleScreen:update(dt)
 --    self.isKeyEnterDown = true
         --print(self.menu[self.index])
         if self.menu[self.index] == newGame then
+            SoundManager.playSound(sounds['menu_confirmed'])
             gameState:setNewState(gameState.gameScreen) 
         else
+            SoundManager.playSound(sounds['menu_confirmed'])
             love.event.quit()    
         end
 --    else
@@ -63,7 +69,10 @@ function TitleScreen:draw()
         if self.index == i then
             text = "> "..text
         end
-
+        
+        love.graphics.setFont(hugeFont)
+        love.graphics.printf('moonlander v0.1', 0, 100, widthField, "center")
+        love.graphics.setFont(gameFont)
         love.graphics.printf(text, (widthField - self.menuWidth) / 2, heightField * 2 / 3 + (i - 1) * self.rowSize, self.menuWidth, "center")
     end
 end    
@@ -73,21 +82,4 @@ function TitleScreen:reset()
 end
 
 function TitleScreen:keyPressed(key)
-    if key == 'down' then
-        self.menu:next()
-    elseif key == 'up' and self.index > 1 then    
-        self.menu:previous()
-    end
-
-    if key == 'return' then
-        self.menu:confirm()
-    end
-end
-
-function TitleScreen:goToMainGame()
-    gameState:setNewState(gameState.gameScreen) 
-end
-
-function TitleScreen:exitGame()
-    love.event.quit() 
 end
