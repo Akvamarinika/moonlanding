@@ -23,5 +23,11 @@ P - пауза в игре
 
 * Корабль полностью посажен на оражевую платформу
 
-## Демонстрация игры:
-<img src="https://i.ibb.co/M9nJvZb/moonlanding.gif" alt="moonlanding" border="0">
+## Демонстрация игры (screenshots):
+<img src="https://i.ibb.co/64tDN6f/535-230619-0430522594.png" alt="535-230619-0430522594" border="0">
+<img src="https://i.ibb.co/CwxS1dZ/719-230619-0431171958.png" alt="719-230619-0431171958" border="0">
+<img src="https://i.ibb.co/hMnSWvG/793-230619-0431270109.png" alt="793-230619-0431270109" border="0">
+<img src="https://i.ibb.co/F4M0k6W/798-230619-0431276667.png" alt="798-230619-0431276667" border="0">
+<img src="https://i.ibb.co/ScqZZd7/934-230619-0431457520.png" alt="934-230619-0431457520" border="0">
+<img src="https://i.ibb.co/Kxrrd5N/1096-230619-0432080880.png" alt="1096-230619-0432080880" border="0">
+<img src="https://i.ibb.co/19YzgdH/1159-230619-0432195859.png" alt="1159-230619-0432195859" border="0">
